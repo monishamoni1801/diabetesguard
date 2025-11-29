@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction History - DiabetesGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="history-header">
+        <h1><i class="fas fa-history"></i> Prediction History</h1>
+        <p>Review your previous diabetes risk assessments and track your health progress</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Your Health Assessments</h2>
+            <div class="header-actions">
+                <a href="{{ url_for('download_history') }}" class="btn btn-outline">
+                    <i class="fas fa-download"></i> Export Data
+                </a>
+                <a href="{{ url_for('prediction') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Assessment
+                </a>
+            </div>
+        </div>
+
+        {% if predictions %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Glucose</th>
+                        <th>BMI</th>
+                        <th>Age</th>
+                        <th>Prediction</th>
+                        <th>Risk Level</th>
+                        <th>Probability</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in predictions %}
+                    <tr>
+                        <td>
+                            <div class="date-time">
+                                <div class="date">{{ prediction.created_at[:10] }}</div>
+                                <div class="time">{{ prediction.created_at[11:16] }}</div>
+                            </div>
+                        </td>
+                        <td>{{ "%.1f"|format(prediction.glucose) }}</td>
+                        <td>{{ "%.1f"|format(prediction.bmi) }}</td>
+                        <td>{{ prediction.age }}</td>
+                        <td>
+                            <span class="prediction-badge {{ 'diabetic' if prediction.prediction_result == 'Diabetic' else 'non-diabetic' }}">
+                                {{ prediction.prediction_result }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="risk-badge risk-{{ prediction.risk_level.lower() }}">
+                                {{ prediction.risk_level }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="probability-display">
+                                <div class="probability-text">{{ "%.1f"|format(prediction.probability * 100) }}%</div>
+                                <div class="probability-bar-small">
+                                    <div class="probability-fill-small" 
+                                         style="width: {{ prediction.probability * 100 }}%; 
+                                                background: {{ get_risk_color(prediction.probability) }}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn-icon view-details" data-id="{{ prediction.id }}" 
+                                    title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon delete-prediction" data-id="{{ prediction.id }}" 
+                                    title="Delete Record">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer">
+            <div class="pagination-info">
+                Showing {{ predictions|length }} of {{ predictions|length }} records
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h3>No Prediction History Yet</h3>
+            <p>You haven't made any diabetes risk assessments yet. Start your first assessment to track your health progress.</p>
+            <a href="{{ url_for('prediction') }}" class="btn btn-primary">
+                <i class="fas fa-stethoscope"></i> Make First Prediction
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Card -->
+    {% if predictions %}
+    <div class="grid grid-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-pie"></i> Risk Distribution</h3>
+            </div>
+            <div class="stat-card">
+                <div class="stat-item">
+                    <div class="stat-indicator low-risk"></div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{ predictions|selectattr('risk_level', 'equalto', 'Low')|list|length }}</div>
+                        <div class="stat-label">Low Risk</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-indicator medium-risk"></div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{ predictions|selectattr('risk_level', 'equalto', 'Medium')|list|length }}</div>
+                        <div class="stat-label">Medium Risk</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-indicator high-risk"></div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{ predictions|selectattr('risk_level', 'equalto', 'High')|list|length }}</div>
+                        <div class="stat-label">High Risk</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-trending-up"></i> Recent Trend</h3>
+            </div>
+            <div class="trend-card">
+                {% set recent_predictions = predictions[:3] %}
+                {% if recent_predictions|length > 1 %}
+                    {% set latest_risk = recent_predictions[0].probability %}
+                    {% set previous_risk = recent_predictions[1].probability %}
+                    {% set trend = latest_risk - previous_risk %}
+                    
+                    <div class="trend-indicator {{ 'up' if trend > 0 else 'down' if trend < 0 else 'stable' }}">
+                        <i class="fas fa-arrow-{{ 'up' if trend > 0 else 'down' if trend < 0 else 'right' }}"></i>
+                        <span>{{ "%.1f"|format(trend * 100) }}%</span>
+                    </div>
+                    <div class="trend-text">
+                        {% if trend > 0 %}
+                        Risk increased in recent assessment
+                        {% elif trend < 0 %}
+                        Risk decreased in recent assessment
+                        {% else %}
+                        Risk stable in recent assessment
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="trend-text">Need more data for trend analysis</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-calendar"></i> Activity Summary</h3>
+            </div>
+            <div class="summary-card">
+                <div class="summary-item">
+                    <div class="summary-label">Total Assessments</div>
+                    <div class="summary-value">{{ predictions|length }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">First Assessment</div>
+                    <div class="summary-value">{{ predictions[-1].created_at[:10] if predictions }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Latest Assessment</div>
+                    <div class="summary-value">{{ predictions[0].created_at[:10] if predictions }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Detail Modal -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Assessment Details</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="modalContent">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.prediction-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.prediction-badge.diabetic {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.prediction-badge.non-diabetic {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.probability-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.probability-text {
+    font-weight: 600;
+    min-width: 45px;
+}
+
+.probability-bar-small {
+    width: 60px;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.probability-fill-small {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.stat-indicator.low-risk { background: #28a745; }
+.stat-indicator.medium-risk { background: #ffc107; }
+.stat-indicator.high-risk { background: #dc3545; }
+
+.trend-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.trend-indicator.up { color: #dc3545; }
+.trend-indicator.down { color: #28a745; }
+.trend-indicator.stable { color: #6c757d; }
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View details functionality
+    document.querySelectorAll('.view-details').forEach(button => {
+        button.addEventListener('click', function() {
+            const predictionId = this.getAttribute('data-id');
+            showPredictionDetails(predictionId);
+        });
+    });
+
+    // Delete prediction functionality
+    document.querySelectorAll('.delete-prediction').forEach(button => {
+        button.addEventListener('click', function() {
+            const predictionId = this.getAttribute('data-id');
+            deletePrediction(predictionId);
+        });
+    });
+
+    // Modal functionality
+    const modal = document.getElementById('detailModal');
+    const closeBtn = modal.querySelector('.modal-close');
+    
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+
+function showPredictionDetails(predictionId) {
+    // In a real application, you would fetch the details from the server
+    // For now, we'll show a placeholder
+    const modal = document.getElementById('detailModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    modalContent.innerHTML = `
+        <div class="detail-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading details...</p>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    
+    // Simulate API call
+    setTimeout(() => {
+        modalContent.innerHTML = `
+            <div class="detail-content">
+                <p>Detailed view for prediction ID: ${predictionId}</p>
+                <p>This would show all the parameters and detailed analysis.</p>
+            </div>
+        `;
+    }, 1000);
+}
+
+function deletePrediction(predictionId) {
+    if (confirm('Are you sure you want to delete this prediction record? This action cannot be undone.')) {
+        // In a real application, you would send a DELETE request to the server
+        console.log('Deleting prediction:', predictionId);
+        alert('Delete functionality would be implemented here with proper backend API.');
+    }
+}
+</script>
+{% endblock %}

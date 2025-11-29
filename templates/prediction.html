@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Diabetes Prediction - DiabetesGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="prediction-header">
+        <h1><i class="fas fa-stethoscope"></i> Diabetes Risk Assessment</h1>
+        <p>Enter your health parameters below to get an instant diabetes risk prediction</p>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-edit"></i> Health Parameters</h2>
+                <p class="card-subtitle">Fill in your current health metrics</p>
+            </div>
+
+            <form id="prediction-form" class="prediction-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="pregnancies" class="form-label">
+                            <i class="fas fa-baby"></i> Number of Pregnancies
+                        </label>
+                        <input type="number" id="pregnancies" name="pregnancies" 
+                               class="form-input" min="0" max="20" value="0" required>
+                        <div class="form-help">For females only. Enter 0 if not applicable.</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>0</span>
+                                <span class="current-value">Current: 0</span>
+                                <span>20</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="glucose" class="form-label">
+                            <i class="fas fa-tint"></i> Glucose Level (mg/dL)
+                        </label>
+                        <input type="number" id="glucose" name="glucose" 
+                               class="form-input" min="0" max="200" step="0.1" required>
+                        <div class="form-help">Plasma glucose concentration. Normal range: 70-140 mg/dL</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>0</span>
+                                <span class="current-value">Current: 0</span>
+                                <span>200</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="blood_pressure" class="form-label">
+                            <i class="fas fa-heartbeat"></i> Blood Pressure (mm Hg)
+                        </label>
+                        <input type="number" id="blood_pressure" name="blood_pressure" 
+                               class="form-input" min="0" max="122" step="0.1" required>
+                        <div class="form-help">Diastolic blood pressure. Normal range: 60-90 mmHg</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>0</span>
+                                <span class="current-value">Current: 0</span>
+                                <span>122</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skin_thickness" class="form-label">
+                            <i class="fas fa-ruler-combined"></i> Skin Thickness (mm)
+                        </label>
+                        <input type="number" id="skin_thickness" name="skin_thickness" 
+                               class="form-input" min="0" max="99" step="0.1" required>
+                        <div class="form-help">Triceps skin fold thickness</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>0</span>
+                                <span class="current-value">Current: 0</span>
+                                <span>99</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="insulin" class="form-label">
+                            <i class="fas fa-syringe"></i> Insulin Level (mu U/ml)
+                        </label>
+                        <input type="number" id="insulin" name="insulin" 
+                               class="form-input" min="0" max="846" step="0.1" required>
+                        <div class="form-help">2-Hour serum insulin</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>0</span>
+                                <span class="current-value">Current: 0</span>
+                                <span>846</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bmi" class="form-label">
+                            <i class="fas fa-weight"></i> BMI (kg/m²)
+                        </label>
+                        <input type="number" id="bmi" name="bmi" 
+                               class="form-input" min="0" max="67.1" step="0.1" required>
+                        <div class="form-help">Body mass index. Healthy range: 18.5-24.9</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>0</span>
+                                <span class="current-value">Current: 0</span>
+                                <span>67.1</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="diabetes_pedigree" class="form-label">
+                            <i class="fas fa-dna"></i> Diabetes Pedigree
+                        </label>
+                        <input type="number" id="diabetes_pedigree" name="diabetes_pedigree" 
+                               class="form-input" min="0" max="2.42" step="0.01" required>
+                        <div class="form-help">Diabetes pedigree function (genetic influence)</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>0</span>
+                                <span class="current-value">Current: 0</span>
+                                <span>2.42</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age" class="form-label">
+                            <i class="fas fa-birthday-cake"></i> Age (years)
+                        </label>
+                        <input type="number" id="age" name="age" 
+                               class="form-input" min="21" max="81" required>
+                        <div class="form-help">Age in years</div>
+                        <div class="range-indicator">
+                            <div class="range-labels">
+                                <span>21</span>
+                                <span class="current-value">Current: 21</span>
+                                <span>81</span>
+                            </div>
+                            <div class="range-track">
+                                <div class="range-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="fill-sample" class="btn btn-outline">
+                        <i class="fas fa-vial"></i> Fill Sample Data
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <i class="fas fa-chart-line"></i> Analyze Diabetes Risk
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-chart-bar"></i> Prediction Results</h2>
+                <p class="card-subtitle">Your diabetes risk analysis will appear here</p>
+            </div>
+
+            <div id="results" class="results-section" style="display: none;">
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3 id="result-text" class="result-text">Analysis Result</h3>
+                        <span id="risk-badge" class="risk-badge">Risk Level</span>
+                    </div>
+                    
+                    <div class="probability-section">
+                        <div class="probability-info">
+                            <span class="probability-label">Risk Probability:</span>
+                            <span id="probability-value" class="probability-value">0%</span>
+                        </div>
+                        <div class="probability-bar">
+                            <div id="probability-fill" class="probability-fill"></div>
+                        </div>
+                        <div class="probability-labels">
+                            <span>Low Risk</span>
+                            <span>Medium Risk</span>
+                            <span>High Risk</span>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-box">
+                        <h4><i class="fas fa-lightbulb"></i> Recommendation</h4>
+                        <p id="recommendation" class="recommendation">Personalized recommendations will appear here based on your results.</p>
+                    </div>
+
+                    <div class="result-details">
+                        <h4><i class="fas fa-info-circle"></i> What This Means</h4>
+                        <p id="result-explanation" class="result-explanation">
+                            Detailed explanation of your results will be provided here.
+                        </p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="save-result" class="btn btn-success">
+                            <i class="fas fa-save"></i> Save Result
+                        </button>
+                        <button id="new-prediction" class="btn btn-outline">
+                            <i class="fas fa-redo"></i> New Prediction
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="no-results" class="no-results">
+                <div class="no-results-content">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>No Analysis Yet</h3>
+                    <p>Fill out the form and click "Analyze Diabetes Risk" to see your results</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Tips Section -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-heart"></i> Diabetes Prevention Tips</h2>
+        </div>
+        <div class="grid grid-2">
+            <div class="tip-card">
+                <i class="fas fa-utensils"></i>
+                <h4>Healthy Eating</h4>
+                <p>Focus on whole foods, limit processed foods and sugars. Include plenty of vegetables and fiber.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-running"></i>
+                <h4>Regular Exercise</h4>
+                <p>Aim for at least 30 minutes of moderate activity most days of the week.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-weight"></i>
+                <h4>Maintain Healthy Weight</h4>
+                <p>Even modest weight loss can significantly reduce diabetes risk.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-stress"></i>
+                <h4>Manage Stress</h4>
+                <p>Chronic stress can affect blood sugar levels. Practice relaxation techniques.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sample data for testing
+document.getElementById('fill-sample').addEventListener('click', function() {
+    const sampleData = {
+        pregnancies: '2',
+        glucose: '148',
+        blood_pressure: '72',
+        skin_thickness: '35',
+        insulin: '0',
+        bmi: '33.6',
+        diabetes_pedigree: '0.627',
+        age: '50'
+    };
+    
+    for (const [key, value] of Object.entries(sampleData)) {
+        const element = document.getElementById(key);
+        if (element) {
+            element.value = value;
+            // Trigger input event to update range indicators
+            element.dispatchEvent(new Event('input'));
+        }
+    }
+    
+    // Show notification
+    showNotification('Sample data filled! You can now analyze the risk.', 'success');
+});
+
+// Initialize range indicators
+document.addEventListener('DOMContentLoaded', function() {
+    initializeRangeIndicators();
+});
+
+function initializeRangeIndicators() {
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        const min = parseFloat(input.min) || 0;
+        const max = parseFloat(input.max) || 100;
+        const value = parseFloat(input.value) || min;
+        
+        updateRangeIndicator(input, value, min, max);
+        
+        input.addEventListener('input', function() {
+            const currentValue = parseFloat(this.value) || min;
+            updateRangeIndicator(this, currentValue, min, max);
+        });
+    });
+}
+
+function updateRangeIndicator(input, value, min, max) {
+    const indicator = input.parentNode.querySelector('.range-indicator');
+    if (indicator) {
+        const progress = ((value - min) / (max - min)) * 100;
+        const progressBar = indicator.querySelector('.range-progress');
+        const currentValueSpan = indicator.querySelector('.current-value');
+        
+        if (progressBar) {
+            progressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+        }
+        if (currentValueSpan) {
+            currentValueSpan.textContent = `Current: ${value}`;
+        }
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Implementation for showing notifications
+    console.log(`${type}: ${message}`);
+}
+</script>
+{% endblock %}

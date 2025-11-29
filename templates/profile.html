@@ -1,0 +1,565 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - DiabetesGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-header">
+        <h1><i class="fas fa-user-circle"></i> My Profile</h1>
+        <p>Manage your account settings and personal information</p>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- Profile Information -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-user-edit"></i> Personal Information</h2>
+            </div>
+            
+            <form method="POST" action="{{ url_for('profile') }}" class="profile-form">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" class="form-input" value="{{ session.username }}" readonly>
+                    <div class="form-help">Username cannot be changed</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address *</label>
+                    <input type="email" id="email" name="email" class="form-input" 
+                           value="{{ session.email or '' }}" placeholder="your@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="full_name" class="form-label">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" class="form-input" 
+                           value="{{ session.full_name or '' }}" placeholder="Your full name">
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age" class="form-label">Age</label>
+                        <input type="number" id="age" name="age" class="form-input" 
+                               value="{{ session.age or '' }}" placeholder="Age" min="1" max="120">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select id="gender" name="gender" class="form-input">
+                            <option value="">Select Gender</option>
+                            <option value="male" {% if session.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if session.gender == 'female' %}selected{% endif %}>Female</option>
+                            <option value="other" {% if session.gender == 'other' %}selected{% endif %}>Other</option>
+                            <option value="prefer_not_to_say" {% if session.gender == 'prefer_not_to_say' %}selected{% endif %}>Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Profile
+                </button>
+            </form>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-cog"></i> Account Settings</h2>
+            </div>
+            
+            <div class="settings-list">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Change Password</h4>
+                        <p>Update your account password</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="showChangePassword()">
+                        Change
+                    </button>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Email Notifications</h4>
+                        <p>Receive health tips and reminders</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Data Export</h4>
+                        <p>Download your health data</p>
+                    </div>
+                    <a href="{{ url_for('download_history') }}" class="btn btn-outline">
+                        Export Data
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-chart-bar"></i> Account Overview</h2>
+        </div>
+        
+        <div class="grid grid-3">
+            <div class="stat-card-profile">
+                <div class="stat-icon">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">
+                        {% if prediction_count is defined %}{{ prediction_count }}{% else %}0{% endif %}
+                    </div>
+                    <div class="stat-label">Total Predictions</div>
+                </div>
+            </div>
+            
+            <div class="stat-card-profile">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">
+                        {{ now().strftime('%d') }}
+                    </div>
+                    <div class="stat-label">Days Active</div>
+                </div>
+            </div>
+            
+            <div class="stat-card-profile">
+                <div class="stat-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">
+                        {% if session.email and session.full_name %}100%{% else %}50%{% endif %}
+                    </div>
+                    <div class="stat-label">Profile Complete</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card danger-zone">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h2>
+        </div>
+        
+        <div class="danger-actions">
+            <div class="danger-item">
+                <div class="danger-info">
+                    <h4>Clear Prediction History</h4>
+                    <p>Remove all your prediction history (this action cannot be undone)</p>
+                </div>
+                <button class="btn btn-danger" onclick="clearPredictionHistory()">
+                    <i class="fas fa-trash"></i> Clear History
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Change Password</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form class="password-form" onsubmit="return changePassword()">
+                <div class="form-group">
+                    <label for="current_password" class="form-label">Current Password</label>
+                    <input type="password" id="current_password" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password" class="form-label">New Password</label>
+                    <input type="password" id="new_password" class="form-input" required minlength="6">
+                    <div class="form-help">At least 6 characters</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_new_password" class="form-label">Confirm New Password</label>
+                    <input type="password" id="confirm_new_password" class="form-input" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('changePasswordModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="color: #28a745;"><i class="fas fa-check-circle"></i> Success</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="successMessage">Operation completed successfully!</p>
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="closeModal('successModal'); location.reload();">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="color: #dc3545;"><i class="fas fa-exclamation-circle"></i> Error</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="errorMessage">An error occurred while processing your request.</p>
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('errorModal')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showChangePassword() {
+    document.getElementById('changePasswordModal').style.display = 'block';
+}
+
+function clearPredictionHistory() {
+    if (confirm('Are you sure you want to clear all your prediction history? This action cannot be undone.')) {
+        showLoading();
+        
+        fetch('/clear_history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                // Show success message and reload page after a delay
+                document.getElementById('successMessage').textContent = 'All prediction history has been cleared successfully!';
+                document.getElementById('successModal').style.display = 'block';
+                
+                // Reload the page after 2 seconds to update the UI
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                document.getElementById('errorMessage').textContent = 'Error clearing history: ' + (data.error || 'Unknown error');
+                document.getElementById('errorModal').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            document.getElementById('errorMessage').textContent = 'Error clearing history: ' + error.message;
+            document.getElementById('errorModal').style.display = 'block';
+        });
+    }
+}
+
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function changePassword() {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_new_password').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('New passwords do not match!');
+        return false;
+    }
+    
+    if (newPassword.length < 6) {
+        alert('Password must be at least 6 characters long!');
+        return false;
+    }
+    
+    // In a real application, you would send this to the server
+    alert('Password change functionality would be implemented with proper backend API.');
+    closeModal('changePasswordModal');
+    return false; // Prevent form submission for demo
+}
+
+// Close modals when clicking outside
+window.addEventListener('click', function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+
+// Close modals with close buttons
+document.querySelectorAll('.modal-close').forEach(button => {
+    button.addEventListener('click', function() {
+        this.closest('.modal').style.display = 'none';
+    });
+});
+
+function showLoading() {
+    const loading = document.getElementById('loading');
+    if (loading) {
+        loading.style.display = 'flex';
+    }
+}
+
+function hideLoading() {
+    const loading = document.getElementById('loading');
+    if (loading) {
+        loading.style.display = 'none';
+    }
+}
+</script>
+
+<style>
+.danger-zone {
+    border-left: 4px solid #dc3545;
+}
+
+.danger-actions {
+    space-y: 1.5rem;
+}
+
+.danger-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+}
+
+.danger-item:not(:last-child) {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.danger-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.danger-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.stat-card-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #4361ee;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    color: #4361ee;
+}
+
+.stat-content .stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #212529;
+}
+
+.stat-content .stat-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.settings-list {
+    space-y: 1.5rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #212529;
+    font-weight: 600;
+}
+
+.setting-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Switch Toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4361ee;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.modal-close:hover {
+    background-color: #f8f9fa;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+</style>
+{% endblock %}

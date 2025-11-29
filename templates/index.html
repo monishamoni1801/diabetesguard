@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}DiabetesGuard - Advanced Diabetes Prediction{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content">
+        <h1>Take Control of Your Health with DiabetesGuard</h1>
+        <p>Advanced machine learning technology to predict diabetes risk and provide personalized health insights</p>
+        <div class="hero-buttons">
+            {% if not session.user_id %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-large">
+                <i class="fas fa-user-plus"></i> Get Started Free
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline btn-large">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </a>
+            {% else %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-large">
+                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+            </a>
+            <a href="{{ url_for('prediction') }}" class="btn btn-outline btn-large">
+                <i class="fas fa-stethoscope"></i> Make Prediction
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="hero-image">
+        <i class="fas fa-heartbeat"></i>
+    </div>
+</div>
+
+<section class="features-section">
+    <div class="container">
+        <h2>Why Choose DiabetesGuard?</h2>
+        <div class="grid grid-3">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>AI-Powered Predictions</h3>
+                <p>Advanced SVM machine learning model trained on thousands of data points for accurate risk assessment</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Secure & Private</h3>
+                <p>Your health data is encrypted and stored securely. We prioritize your privacy above all else</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Track Progress</h3>
+                <p>Monitor your health over time with detailed history and personalized recommendations</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="how-it-works">
+    <div class="container">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Create Account</h3>
+                    <p>Sign up for free and set up your profile</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Enter Health Data</h3>
+                    <p>Provide basic health parameters in our easy-to-use form</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Get Instant Analysis</h3>
+                    <p>Receive immediate risk assessment with detailed insights</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Take Action</h3>
+                    <p>Follow personalized recommendations to improve your health</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat">
+                <div class="stat-number">95%</div>
+                <div class="stat-label">Prediction Accuracy</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">10K+</div>
+                <div class="stat-label">Health Assessments</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Available</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Secure & Private</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Start Your Health Journey Today</h2>
+            <p>Join thousands of users who are taking control of their health with DiabetesGuard</p>
+            {% if not session.user_id %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-large">
+                <i class="fas fa-rocket"></i> Start Free Now
+            </a>
+            {% else %}
+            <a href="{{ url_for('prediction') }}" class="btn btn-primary btn-large">
+                <i class="fas fa-stethoscope"></i> Make New Prediction
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
