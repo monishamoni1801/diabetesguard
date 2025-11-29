@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - DiabetesGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section with better spacing -->
+    <div class="hero" style="margin-bottom: 3rem;">
+        <div class="hero-content">
+            <h1>Welcome back, {{ session.full_name or session.username }}! 👋</h1>
+            <p>Monitor your health and get intelligent diabetes risk predictions</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions Grid with better spacing -->
+    <div class="grid grid-3" style="gap: 2rem; margin-bottom: 3rem;">
+        <div class="card" style="height: 100%;">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-stethoscope"></i> Quick Prediction</h3>
+            </div>
+            <div class="card-body">
+                <p>Get an instant diabetes risk assessment based on your health parameters.</p>
+                <a href="{{ url_for('prediction') }}" class="btn btn-primary" style="margin-top: 1rem;">
+                    Start Prediction
+                </a>
+            </div>
+        </div>
+
+        <div class="card" style="height: 100%;">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-history"></i> Prediction History</h3>
+            </div>
+            <div class="card-body">
+                <p>Review your previous predictions and track your health over time.</p>
+                <a href="{{ url_for('history') }}" class="btn btn-outline" style="margin-top: 1rem;">
+                    View History
+                </a>
+            </div>
+        </div>
+
+        <div class="card" style="height: 100%;">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-line"></i> Health Insights</h3>
+            </div>
+            <div class="card-body">
+                <p>Understand your risk factors and get personalized recommendations.</p>
+                <a href="{{ url_for('prediction') }}" class="btn btn-outline" style="margin-top: 1rem;">
+                    Get Insights
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Section -->
+    {% if prediction_count > 0 %}
+    <div class="card" style="margin-bottom: 3rem;">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Quick Stats</h3>
+        </div>
+        <div class="grid grid-3">
+            <div class="stat-item-simple">
+                <div class="stat-number">{{ prediction_count }}</div>
+                <div class="stat-label">Total Predictions</div>
+            </div>
+            <div class="stat-item-simple">
+                <div class="stat-number">{{ recent_predictions|length }}</div>
+                <div class="stat-label">Recent Assessments</div>
+            </div>
+            <div class="stat-item-simple">
+                <div class="stat-number">
+                    {% if recent_predictions %}
+                        {{ (recent_predictions[0].probability * 100)|round(1) }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <div class="stat-label">Latest Risk Score</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Health Tips Section -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-heart"></i> Health Tips</h3>
+        </div>
+        <div class="grid grid-2">
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <h4>Stay Hydrated</h4>
+                <p>Drink plenty of water throughout the day to help regulate blood sugar levels.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <h4>Quality Sleep</h4>
+                <p>Aim for 7-9 hours of quality sleep per night to support metabolic health.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-running"></i>
+                </div>
+                <h4>Stay Active</h4>
+                <p>Regular exercise helps improve insulin sensitivity and maintain healthy weight.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h4>Balanced Diet</h4>
+                <p>Focus on whole foods, fiber-rich vegetables, and lean proteins.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 3rem 2rem;
+    text-align: center;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.card-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-body {
+    flex-grow: 1;
+}
+
+.card-body p {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item-simple {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.tip-card {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.tip-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.tip-card h4 {
+    margin-bottom: 1rem;
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.tip-card p {
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
